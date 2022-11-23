@@ -134,24 +134,29 @@ class AsicAgent:
         return output
 
     def disable_asic(self, ip, port, user, password):
+        logging.info(f"Shutting down ASIC: {ip}:{port}")
         self.disable_internet_access(ip)
         self.restart_asic(ip, port, user, password)
 
     def enable_asic(self, ip, port, user, password):
+        logging.info(f"Starting ASIC: {ip}:{port}")
         self.enable_internet_access(ip)
 
     def disable_internet_access(self, ip):
+        logging.info(f"Disabling internet access for: {ip}")
         pass
 
     def enable_internet_access(self, ip):
+        logging.info(f"Enabling internet access for: {ip}")
         pass
 
     def restart_asic(self, ip, port, user, password):
+        logging.info(f"Restarting ASIC: {ip}:{port}")
         api = DragonAPI(f"{ip}:{port}",
                         username=user,
                         password=password)
 
-        r = api.restartCgMiner()
+        api.restartCgMiner()
 
 
 if __name__ == '__main__':
