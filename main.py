@@ -34,7 +34,6 @@ class Hosts(db.Entity):
 
 
 # Defining a table for power groups
-# TODO: update power groups based on Hosts data on start up
 class PowerGroups(db.Entity):
     id = orm.PrimaryKey(int, auto=True)
     total_power = orm.Required(int)
@@ -43,6 +42,7 @@ class PowerGroups(db.Entity):
 
 class AsicAgent:
     def __init__(self):
+        # TODO: Update power groups based on Hosts data on start up
         self.sleep_timer = SLEEP_TIMER
         self.url = URL
 
@@ -61,6 +61,8 @@ class AsicAgent:
         while True:
             available_power = self.get_available_power()
             active_power = self.get_active_power()
+
+            self.update_power_groups()
 
             logging.info(f"Available power: {available_power}")
             logging.info(f"Active power: {active_power}")
@@ -133,12 +135,17 @@ class AsicAgent:
 
         return output
 
+    def update_power_groups(self):
+        pass
+
     def disable_asic(self, ip, port, user, password):
+        # TODO: Update DB once triggered
         logging.info(f"Shutting down ASIC: {ip}:{port}")
         self.disable_internet_access(ip)
         self.restart_asic(ip, port, user, password)
 
     def enable_asic(self, ip, port, user, password):
+        # TODO: Update DB once triggered
         logging.info(f"Starting ASIC: {ip}:{port}")
         self.enable_internet_access(ip)
 
