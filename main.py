@@ -8,7 +8,7 @@ from dragon_rest.dragons import DragonAPI
 # Time between checks
 SLEEP_TIMER = 1
 # URL for getting active power updates
-URL = "https://power.knst.me/power.json"
+URL = "http://127.0.0.1:8000/power.json"
 
 # Checking for DEBUG environment
 if os.getenv('DEBUG'):
@@ -64,11 +64,7 @@ class AsicAgent:
         """
         while True:
             # TODO: Add hysteresis for enabling ASICS
-            if os.getenv('MANUAL_POWER'):
-                available_power = int(input("Enter available power in kW: "))*1000
-            else:
-                available_power = self.get_available_power()
-
+            available_power = self.get_available_power()
             active_power = self.get_active_power()
 
             self.update_power_groups()
@@ -107,8 +103,7 @@ class AsicAgent:
             logging.error(f"Download error {e}")
             data['success'] = False  # Fetching data wasn't successful
 
-        # TODO: Check if data['success'] is not present
-        if data['success'] is True:
+        if 'success' in data and data['success'] is True:
             return data['power']
         else:
             return 0
