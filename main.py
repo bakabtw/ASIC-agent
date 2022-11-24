@@ -181,8 +181,8 @@ class AsicAgent:
         logging.info(f"Shutting down ASIC: {ip}:{port}")
 
         self.update_asic_status(ip, online='False')
-        self.disable_internet_access(ip)
         self.restart_asic(ip, port, user, password)
+        self.disable_internet_access(ip)
 
     def enable_asic(self, ip, port, user, password):
         logging.info(f"Starting ASIC: {ip}:{port}")
