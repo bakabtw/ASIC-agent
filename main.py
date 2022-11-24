@@ -7,6 +7,7 @@ from dragon_rest.dragons import DragonAPI
 
 # Time between checks
 SLEEP_TIMER = 15
+# URL for getting active power updates
 URL = "https://power.knst.me/power.json"
 
 # Checking for DEBUG environment
@@ -168,15 +169,22 @@ class AsicAgent:
             host.online = 'False'
             self.disable_internet_access(host.ip)
 
+    @orm.db_session
+    def update_asic_status(self, ip, online):
+        host = Hosts.get(lambda p: p.ip == ip)
+        host.online = online
+
     def disable_asic(self, ip, port, user, password):
-        # TODO: Update DB once triggered
         logging.info(f"Shutting down ASIC: {ip}:{port}")
+
+        self.update_asic_status(ip, online='False')
         self.disable_internet_access(ip)
         self.restart_asic(ip, port, user, password)
 
     def enable_asic(self, ip, port, user, password):
-        # TODO: Update DB once triggered
         logging.info(f"Starting ASIC: {ip}:{port}")
+
+        self.update_asic_status(ip, online='True')
         self.enable_internet_access(ip)
 
     def disable_internet_access(self, ip):
