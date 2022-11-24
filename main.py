@@ -208,11 +208,14 @@ class AsicAgent:
 
     def restart_asic(self, ip, port, user, password):
         logging.info(f"Restarting ASIC: {ip}:{port}")
-        api = DragonAPI(f"{ip}:{port}",
-                        username=user,
-                        password=password)
+        try:
+            api = DragonAPI(f"{ip}:{port}",
+                            username=user,
+                            password=password)
 
-        api.restartCgMiner()
+            api.restartCgMiner()
+        except Exception as e:
+            logging.error(f"Error occurred during restarting an ASIC ({ip}): {e}")
 
 
 if __name__ == '__main__':
