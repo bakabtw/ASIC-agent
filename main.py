@@ -79,7 +79,7 @@ class AsicAgent:
             if available_power >= active_power:
                 power_group = self.get_random_power_group(online='False')
 
-                if power_group is not None and available_power > power_group.total_power:
+                if power_group is not None and available_power - active_power > power_group.total_power:
                     for member in self.get_power_group_members(power_group.id):
                         self.enable_asic(
                             member.ip, member.port,
