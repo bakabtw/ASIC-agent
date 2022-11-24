@@ -61,6 +61,7 @@ class AsicAgent:
             6. GOTO 1
         """
         while True:
+            # TODO: Add hysteresis for enabling ASICS
             available_power = self.get_available_power()
             active_power = self.get_active_power()
 
@@ -72,7 +73,7 @@ class AsicAgent:
             if available_power > active_power:
                 power_group = self.get_random_power_group(online='False')
 
-                if available_power > power_group.total_power:
+                if power_group is not None and available_power > power_group.total_power:
                     for member in self.get_power_group_members(power_group.id):
                         self.enable_asic(
                             member.ip, member.port,
@@ -122,8 +123,10 @@ class AsicAgent:
     def get_random_power_group(self, online):
         power_group = PowerGroups.select(lambda p: p.online == online).random(1)
 
-        # TODO: Add a check for an empty list
-        output = power_group[0]
+        if len(power_group) > 0:
+            output = power_group[0]
+        else:
+            output = None
 
         return output
 
@@ -163,6 +166,7 @@ class AsicAgent:
 
     @orm.db_session
     def shutdown_all_asics(self):
+        logging.info("Shutting down all ASICs")
         hosts = Hosts.select()
 
         for host in hosts:
