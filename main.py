@@ -46,6 +46,8 @@ class AsicAgent:
         self.sleep_timer = SLEEP_TIMER
         self.url = URL
 
+        db.generate_mapping(create_tables=True)
+
     def run(self):
         """
             Algorithm:
@@ -56,8 +58,6 @@ class AsicAgent:
             5. Disable/Enable ASICs if necessary
             6. GOTO 1
         """
-        db.generate_mapping(create_tables=True)
-
         while True:
             available_power = self.get_available_power()
             active_power = self.get_active_power()
@@ -135,8 +135,29 @@ class AsicAgent:
 
         return output
 
+    @orm.db_session
     def update_power_groups(self):
-        pass
+        logging.info("Updating PowerGroups table")
+        self.flush_power_groups()
+
+        members = Hosts.select()
+
+        for member in members:
+            power_group = PowerGroups.get(lambda p: p.id == member.power_group)
+
+            if power_group:
+                power_group.total_power += member.power
+            else:
+                power_group = PowerGroups(
+                    id=member.power_group,
+                    total_power=member.power,
+                    online=member.online
+                )
+
+    @orm.db_session
+    def flush_power_groups(self):
+        logging.info("Flushing PowerGroups table")
+        PowerGroups.select().delete(bulk=True)
 
     def disable_asic(self, ip, port, user, password):
         # TODO: Update DB once triggered
