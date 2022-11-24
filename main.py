@@ -65,7 +65,7 @@ class AsicAgent:
         while True:
             # TODO: Add hysteresis for enabling ASICS
             if os.getenv('MANUAL_POWER'):
-                available_power = int(input("Enter available power in watts: "))
+                available_power = int(input("Enter available power in kW: "))*1000
             else:
                 available_power = self.get_available_power()
 
