@@ -204,23 +204,62 @@ class AsicAgent:
         # TODO: Add logic to disable_internet_access()
         logging.info(f"Disabling internet access for: {ip}")
 
-        # Establishing connection with Mikrotik API
-        mk_connection = routeros_api.RouterOsApiPool(
-            self.router['ip'],
-            port=self.router['port'],
-            username=self.router['username'],
-            password=self.router['password']
-        )
-        api = mk_connection.get_api()
+        try:
+            # Establishing connection with Mikrotik API
+            mk_connection = routeros_api.RouterOsApiPool(
+                self.router['ip'],
+                port=self.router['port'],
+                username=self.router['username'],
+                password=self.router['password']
+            )
+            api = mk_connection.get_api()
+
+            # Command to block internet access
+            # /ip firewall filter add action=reject chain=forward src-address-list=BL
+            # Command to add an address to a blacklist
+            # /ip firewall address-list add address=192.168.88.100 list=BL
+            list_address = api.get_resource('/ip/firewall/address-list')
+            list_address.add(address=ip, list="BL")
+        except Exception as e:
+            logging.error(f"Error while disabling internet access for {ip}: {e}")
 
     def enable_internet_access(self, ip):
         # TODO: Add logic to enable_internet_access()
         logging.info(f"Enabling internet access for: {ip}")
-        pass
+
+        try:
+            # Establishing connection with Mikrotik API
+            mk_connection = routeros_api.RouterOsApiPool(
+                self.router['ip'],
+                port=self.router['port'],
+                username=self.router['username'],
+                password=self.router['password']
+            )
+            api = mk_connection.get_api()
+
+            list_address = api.get_resource('/ip/firewall/address-list')
+            list_address.remove(address=ip, list="BL")
+        except Exception as e:
+            logging.error(f"Error while enabling internet access for {ip}: {e}")
 
     def flush_access_rules(self):
-        # TODO: Add the logic
-        pass
+        # TODO: Add logic to flush_access_rules()
+        logging.info("Flushing internet access rules")
+
+        try:
+            # Establishing connection with Mikrotik API
+            mk_connection = routeros_api.RouterOsApiPool(
+                self.router['ip'],
+                port=self.router['port'],
+                username=self.router['username'],
+                password=self.router['password']
+            )
+            api = mk_connection.get_api()
+
+            list_address = api.get_resource('/ip/firewall/address-list')
+            rules = list_address.get()
+        except Exception as e:
+            logging.error(f"Error while flushing internet access rules: {e}")
 
     def restart_asic(self, ip, port, user, password):
         logging.info(f"Restarting ASIC: {ip}:{port}")
