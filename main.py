@@ -12,8 +12,10 @@ URL = "https://power.knst.me/power.json"
 
 # Checking for DEBUG environment
 if os.getenv('DEBUG'):
-    orm.set_sql_debug(True)
     logging.basicConfig(level=logging.INFO)
+
+    if os.getenv('DEBUG') == 'verbose':
+        orm.set_sql_debug(True)
 
 # Creating DB
 db = orm.Database()
@@ -70,7 +72,7 @@ class AsicAgent:
             logging.info(f"Available power: {available_power}")
             logging.info(f"Active power: {active_power}")
 
-            if available_power > active_power:
+            if available_power >= active_power:
                 power_group = self.get_random_power_group(online='False')
 
                 if power_group is not None and available_power > power_group.total_power:
@@ -93,7 +95,6 @@ class AsicAgent:
             time.sleep(self.sleep_timer)
 
     def get_available_power(self):
-        # TODO: Add error handling
         data = {}
 
         try:
@@ -192,10 +193,12 @@ class AsicAgent:
         self.enable_internet_access(ip)
 
     def disable_internet_access(self, ip):
+        # TODO: Add logic to disable_internet_access()
         logging.info(f"Disabling internet access for: {ip}")
         pass
 
     def enable_internet_access(self, ip):
+        # TODO: Add logic to enable_internet_access()
         logging.info(f"Enabling internet access for: {ip}")
         pass
 
