@@ -42,11 +42,12 @@ class PowerGroups(db.Entity):
 
 class AsicAgent:
     def __init__(self):
-        # TODO: Update power groups based on Hosts data on start up
         self.sleep_timer = SLEEP_TIMER
         self.url = URL
 
         db.generate_mapping(create_tables=True)
+
+        self.shutdown_all_asics()
 
     def run(self):
         """
@@ -158,6 +159,14 @@ class AsicAgent:
     def flush_power_groups(self):
         logging.info("Flushing PowerGroups table")
         PowerGroups.select().delete(bulk=True)
+
+    @orm.db_session
+    def shutdown_all_asics(self):
+        hosts = Hosts.select()
+
+        for host in hosts:
+            host.online = 'False'
+            self.disable_internet_access(host.ip)
 
     def disable_asic(self, ip, port, user, password):
         # TODO: Update DB once triggered
