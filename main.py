@@ -60,6 +60,7 @@ class AsicAgent:
         db.generate_mapping(create_tables=True)
 
         self.shutdown_all_asics()
+        self.flush_access_rules()
 
     def run(self):
         """
@@ -210,15 +211,20 @@ class AsicAgent:
             username=self.router['username'],
             password=self.router['password']
         )
-        mk_api = mk_connection.get_api()
+        api = mk_connection.get_api()
 
     def enable_internet_access(self, ip):
         # TODO: Add logic to enable_internet_access()
         logging.info(f"Enabling internet access for: {ip}")
         pass
 
+    def flush_access_rules(self):
+        # TODO: Add the logic
+        pass
+
     def restart_asic(self, ip, port, user, password):
         logging.info(f"Restarting ASIC: {ip}:{port}")
+
         try:
             api = DragonAPI(f"{ip}:{port}",
                             username=user,
