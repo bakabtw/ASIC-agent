@@ -8,6 +8,10 @@ import routeros_api
 
 # Time between checks
 SLEEP_TIMER = 1
+# Timeout for accessing ASIC
+RESET_ASIC_TIMEOUT = 1
+# Timeout for accessing Mikrotik router
+MIKROTIK_ACCESS_TIMEOUT = 1
 # URL for getting active power updates
 URL = "http://127.0.0.1:8000/power.json"
 # Router credential
@@ -56,6 +60,8 @@ class AsicAgent:
         self.sleep_timer = SLEEP_TIMER
         self.url = URL
         self.router = ROUTER
+        self.reset_asic_timeout = RESET_ASIC_TIMEOUT
+        self.mikrotik_access_timeout = MIKROTIK_ACCESS_TIMEOUT
 
         db.generate_mapping(create_tables=True)
 
@@ -212,6 +218,7 @@ class AsicAgent:
                 username=self.router['username'],
                 password=self.router['password']
             )
+            mk_connection.set_timeout(self.mikrotik_access_timeout)
             api = mk_connection.get_api()
 
             # Command to block internet access
@@ -235,6 +242,7 @@ class AsicAgent:
                 username=self.router['username'],
                 password=self.router['password']
             )
+            mk_connection.set_timeout(self.mikrotik_access_timeout)
             api = mk_connection.get_api()
 
             list_address = api.get_resource('/ip/firewall/address-list')
@@ -254,6 +262,7 @@ class AsicAgent:
                 username=self.router['username'],
                 password=self.router['password']
             )
+            mk_connection.set_timeout(self.mikrotik_access_timeout)
             api = mk_connection.get_api()
 
             list_address = api.get_resource('/ip/firewall/address-list')
@@ -268,7 +277,7 @@ class AsicAgent:
             api = DragonAPI(f"{ip}:{port}",
                             username=user,
                             password=password,
-                            timeout=1)
+                            timeout=self.reset_asic_timeout)
 
             api.restartCgMiner()
         except Exception as e:
