@@ -94,8 +94,6 @@ class AsicAgent:
                         member.user, member.password
                     )
 
-                continue
-
             self.show_status()
             time.sleep(self.sleep_timer)
 
@@ -212,7 +210,8 @@ class AsicAgent:
         try:
             api = DragonAPI(f"{ip}:{port}",
                             username=user,
-                            password=password)
+                            password=password,
+                            timeout=1)
 
             api.restartCgMiner()
         except Exception as e:
