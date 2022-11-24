@@ -6,7 +6,7 @@ import requests
 from dragon_rest.dragons import DragonAPI
 
 # Time between checks
-SLEEP_TIMER = 15
+SLEEP_TIMER = 1
 # URL for getting active power updates
 URL = "https://power.knst.me/power.json"
 
@@ -96,6 +96,7 @@ class AsicAgent:
 
                 continue
 
+            self.show_status()
             time.sleep(self.sleep_timer)
 
     def get_available_power(self):
@@ -216,6 +217,21 @@ class AsicAgent:
             api.restartCgMiner()
         except Exception as e:
             logging.error(f"Error occurred during restarting an ASIC ({ip}): {e}")
+
+    @orm.db_session
+    def show_status(self):
+        hosts = Hosts.select()
+
+        logging.info("id ip power power_group online")
+
+        for host in hosts:
+            logging.info([
+                host.id,
+                host.ip,
+                host.power,
+                host.power_group,
+                host.online]
+            )
 
 
 if __name__ == '__main__':
