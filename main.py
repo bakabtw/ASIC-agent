@@ -4,11 +4,19 @@ from pony import orm
 import logging
 import requests
 from dragon_rest.dragons import DragonAPI
+import routeros_api
 
 # Time between checks
 SLEEP_TIMER = 1
 # URL for getting active power updates
 URL = "http://127.0.0.1:8000/power.json"
+# Router credential
+ROUTER = {
+    'ip': '192.168.88.1',
+    'port': 80,
+    'username': 'admin',
+    'password': 'admin'
+}
 
 # Checking for DEBUG environment
 if os.getenv('DEBUG'):
@@ -47,6 +55,7 @@ class AsicAgent:
     def __init__(self):
         self.sleep_timer = SLEEP_TIMER
         self.url = URL
+        self.router = ROUTER
 
         db.generate_mapping(create_tables=True)
 
@@ -193,7 +202,15 @@ class AsicAgent:
     def disable_internet_access(self, ip):
         # TODO: Add logic to disable_internet_access()
         logging.info(f"Disabling internet access for: {ip}")
-        pass
+
+        # Establishing connection with Mikrotik API
+        mk_connection = routeros_api.RouterOsApiPool(
+            self.router['ip'],
+            port=self.router['port'],
+            username=self.router['username'],
+            password=self.router['password']
+        )
+        mk_api = mk_connection.get_api()
 
     def enable_internet_access(self, ip):
         # TODO: Add logic to enable_internet_access()
