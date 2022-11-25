@@ -176,7 +176,6 @@ class AsicAgent:
 
     @orm.db_session
     def flush_power_groups(self):
-        logging.info("Flushing PowerGroups table")
         PowerGroups.select().delete(bulk=True)
 
     @orm.db_session
