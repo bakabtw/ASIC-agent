@@ -6,54 +6,6 @@ import requests
 from dragon_rest.dragons import DragonAPI
 import routeros_api
 
-# Time between checks
-SLEEP_TIMER = 10
-# Timeout for accessing ASIC
-RESET_ASIC_TIMEOUT = 5
-# Timeout for accessing Mikrotik router
-MIKROTIK_ACCESS_TIMEOUT = 5
-# URL for getting active power updates
-URL = "http://127.0.0.1:8000/power.json"
-# Router credential
-ROUTER = {
-    'ip': '192.168.88.1',
-    'port': 8728,
-    'username': 'admin',
-    'password': 'aszpvo'
-}
-
-# Checking for DEBUG environment
-if os.getenv('DEBUG'):
-    logging.basicConfig(level=logging.INFO)
-
-    if os.getenv('DEBUG') == 'verbose':
-        orm.set_sql_debug(True)
-
-# Creating DB
-db = orm.Database()
-db.bind(provider='sqlite', filename='asics.db', create_db=True)
-
-
-# Defining a table for ASICs
-class Hosts(db.Entity):
-    id = orm.PrimaryKey(int, auto=True)
-    ip = orm.Required(str)
-    port = orm.Required(int)
-    user = orm.Required(str)
-    password = orm.Required(str)
-    type = orm.Required(str)
-    power = orm.Required(int)
-    phase = orm.Required(str)
-    power_group = orm.Required(int)
-    online = orm.Required(str)
-
-
-# Defining a table for power groups
-class PowerGroups(db.Entity):
-    id = orm.PrimaryKey(int, auto=True)
-    total_power = orm.Required(int)
-    online = orm.Required(str)
-
 
 class AsicAgent:
     def __init__(self):
@@ -119,7 +71,7 @@ class AsicAgent:
             logging.error(f"Download error {e}")
             data['success'] = False  # Fetching data wasn't successful
 
-        if 'success' in data and data['success'] is True:
+        if 'success' in data and data['success'] is True and data['power'] >= 0:
             return data['power']
         else:
             return 0
@@ -286,4 +238,51 @@ class AsicAgent:
 
 
 if __name__ == '__main__':
+    # Time between checks
+    SLEEP_TIMER = 1
+    # Timeout for accessing ASIC
+    RESET_ASIC_TIMEOUT = 1
+    # Timeout for accessing Mikrotik router
+    MIKROTIK_ACCESS_TIMEOUT = 1
+    # URL for getting active power updates
+    URL = "http://127.0.0.1:8000/power.json"
+    # Router credential
+    ROUTER = {
+        'ip': '192.168.88.1',
+        'port': 8728,
+        'username': 'admin',
+        'password': 'aszpvo'
+    }
+
+    # Checking for DEBUG environment
+    if os.getenv('DEBUG'):
+        logging.basicConfig(level=logging.INFO)
+
+        if os.getenv('DEBUG') == 'verbose':
+            orm.set_sql_debug(True)
+
+    # Creating DB
+    db = orm.Database()
+    db.bind(provider='sqlite', filename='asics.db', create_db=True)
+
+    # Defining a table for ASICs
+    class Hosts(db.Entity):
+        id = orm.PrimaryKey(int, auto=True)
+        ip = orm.Required(str)
+        port = orm.Required(int)
+        user = orm.Required(str)
+        password = orm.Required(str)
+        type = orm.Required(str)
+        power = orm.Required(int)
+        phase = orm.Required(str)
+        power_group = orm.Required(int)
+        online = orm.Required(str)
+
+    # Defining a table for power groups
+    class PowerGroups(db.Entity):
+        id = orm.PrimaryKey(int, auto=True)
+        total_power = orm.Required(int)
+        online = orm.Required(str)
+
+    # Starting main loop
     AsicAgent().run()
