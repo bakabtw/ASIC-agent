@@ -22,4 +22,4 @@ It's important to add a firewall rule in RouterOS for blocking internet access b
 - pony
 - dragon_rest
 - routeros_api
-- influxdb
+- influxdb_client

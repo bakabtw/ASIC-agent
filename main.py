@@ -5,7 +5,7 @@ import logging
 import requests
 from dragon_rest.dragons import DragonAPI
 import routeros_api
-from influxdb import InfluxDBClient
+from influxdb_client import InfluxDBClient
 from datetime import datetime
 
 
@@ -25,9 +25,9 @@ class AsicAgent:
         self.influxdb = {
             'host': os.getenv('INFLUX_HOST'),
             'port': os.getenv('INFLUX_PORT'),
-            'username': os.getenv('INFLUX_USERNAME'),
-            'password': os.getenv('INFLUX_PASSWORD'),
-            'database': os.getenv('INFLUX_DATABASE')
+            'token': os.getenv('INFLUX_USERNAME'),
+            'org': os.getenv('INFLUX_ORG'),
+            'bucket': os.getenv('INFLUX_BUCKET')
         } if os.getenv('INFLUX_HOST') else INFLUXDB
 
         # Generating DB mapping
@@ -87,6 +87,8 @@ class AsicAgent:
                     )
             # Showing stats
             self.show_status()
+            # Sending stats to InfluxDB
+            self.write_logs(available_power, active_power)
             # Sleeping before the next iteration
             time.sleep(self.sleep_timer)
 
@@ -437,42 +439,12 @@ class AsicAgent:
                 host.online]
             )
 
-    def write_logs(self, available_power, active_power, ):
+    def write_logs(self, available_power, active_power):
         client = InfluxDBClient(
-            host=self.influxdb['host'],
-            port=self.influxdb['port'],
-            username=self.influxdb['username'],
-            password=self.influxdb['password'],
-            database=self.influxdb['database']
+            url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
+            token=self.influxdb['token'],
+            org=self.influxdb['org']
         )
-        # client.create_database(self.influxdb['database'])
-
-        available_power_json = {
-            "measurement": "available_power",
-            "tags": {
-                "farm": "Verkhoyansk",  # to be updated
-            },
-            "time": datetime.now(),
-            "fields": {
-                "value": available_power
-            }
-        }
-
-        active_power_json = {
-            "measurement": "active_power",
-            "tags": {
-                "farm": "Verkhoyansk",  # to be updated
-            },
-            "time": datetime.now(),
-            "fields": {
-                "value": active_power
-            }
-        }
-
-        json_body = [available_power_json, active_power_json]
-        client.write_points(json_body)
-
-        return json_body
 
 
 if __name__ == '__main__':
@@ -493,11 +465,11 @@ if __name__ == '__main__':
     }
     # InfluxDB credentials
     INFLUXDB = {
-        'host': 'influxdb',
+        'host': 'localhost',
         'port': 8086,
-        'username': 'root',
-        'password': 'root',
-        'database': 'power_logs'
+        'token': 'FDiJd70rkRTSp3WelU9AHhdDf82e_mG1zZSgP3oFegLjapVj63IpkKvl_VZilWO08acwTBUDsVwuasfQ-T-hBw==',
+        'org': 'asic',
+        'bucket': 'power'
     }
 
     # Checking for DEBUG environment
