@@ -5,6 +5,8 @@ import logging
 import requests
 from dragon_rest.dragons import DragonAPI
 import routeros_api
+from influxdb import InfluxDBClient
+from datetime import datetime
 
 
 class AsicAgent:
@@ -20,6 +22,13 @@ class AsicAgent:
         } if os.getenv('ROUTER_IP') else ROUTER
         self.reset_asic_timeout = os.getenv('RESET_ASIC_TIMEOUT') or RESET_ASIC_TIMEOUT
         self.mikrotik_access_timeout = os.getenv('MIKROTIK_ACCESS_TIMEOUT') or MIKROTIK_ACCESS_TIMEOUT
+        self.influxdb = {
+            'host': os.getenv('INFLUX_HOST'),
+            'port': os.getenv('INFLUX_PORT'),
+            'username': os.getenv('INFLUX_USERNAME'),
+            'password': os.getenv('INFLUX_PASSWORD'),
+            'database': os.getenv('INFLUX_DATABASE')
+        } if os.getenv('INFLUX_HOST') else INFLUXDB
 
         # Generating DB mapping
         db.generate_mapping(create_tables=True)
@@ -428,6 +437,43 @@ class AsicAgent:
                 host.online]
             )
 
+    def write_logs(self, available_power, active_power, ):
+        client = InfluxDBClient(
+            host=self.influxdb['host'],
+            port=self.influxdb['port'],
+            username=self.influxdb['username'],
+            password=self.influxdb['password'],
+            database=self.influxdb['database']
+        )
+        # client.create_database(self.influxdb['database'])
+
+        available_power_json = {
+            "measurement": "available_power",
+            "tags": {
+                "farm": "Verkhoyansk",  # to be updated
+            },
+            "time": datetime.now(),
+            "fields": {
+                "value": available_power
+            }
+        }
+
+        active_power_json = {
+            "measurement": "active_power",
+            "tags": {
+                "farm": "Verkhoyansk",  # to be updated
+            },
+            "time": datetime.now(),
+            "fields": {
+                "value": active_power
+            }
+        }
+
+        json_body = [available_power_json, active_power_json]
+        client.write_points(json_body)
+
+        return json_body
+
 
 if __name__ == '__main__':
     # Time between checks
@@ -438,12 +484,20 @@ if __name__ == '__main__':
     MIKROTIK_ACCESS_TIMEOUT = 1
     # URL for getting active power updates
     URL = "http://127.0.0.1:8000/power.json"
-    # Router credential
+    # Router credentials
     ROUTER = {
         'ip': '192.168.88.1',
         'port': 8728,
         'username': 'admin',
         'password': 'aszpvo'
+    }
+    # InfluxDB credentials
+    INFLUXDB = {
+        'host': 'influxdb',
+        'port': 8086,
+        'username': 'root',
+        'password': 'root',
+        'database': 'power_logs'
     }
 
     # Checking for DEBUG environment
