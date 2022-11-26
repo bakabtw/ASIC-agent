@@ -10,11 +10,16 @@ import routeros_api
 class AsicAgent:
     def __init__(self):
         # Setting up variables
-        self.sleep_timer = SLEEP_TIMER
-        self.url = URL
-        self.router = ROUTER
-        self.reset_asic_timeout = RESET_ASIC_TIMEOUT
-        self.mikrotik_access_timeout = MIKROTIK_ACCESS_TIMEOUT
+        self.sleep_timer = os.getenv('SLEEP_TIMER') or SLEEP_TIMER
+        self.url = os.getenv('URL') or URL
+        self.router = {
+            'ip': os.getenv('ROUTER_IP'),
+            'port': os.getenv('ROUTER_PORT'),
+            'username': os.getenv('ROUTER_USERNAME'),
+            'password': os.getenv('ROUTER_PASSWORD')
+        } if os.getenv('ROUTER_IP') else ROUTER
+        self.reset_asic_timeout = os.getenv('RESET_ASIC_TIMEOUT') or RESET_ASIC_TIMEOUT
+        self.mikrotik_access_timeout = os.getenv('MIKROTIK_ACCESS_TIMEOUT') or MIKROTIK_ACCESS_TIMEOUT
 
         # Generating DB mapping
         db.generate_mapping(create_tables=True)
