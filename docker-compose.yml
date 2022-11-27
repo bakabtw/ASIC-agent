@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  asic-agent:
+    build: .
+    container_name: asic-agent
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+      - web
+    environment:
+      - SLEEP_TIMER=1
+      - RESET_ASIC_TIMEOUT=1
+      - MIKROTIK_ACCESS_TIMEOUT=1
+      - URL=http://web/power.json
+      - ROUTER_IP=192.168.88.1
+      - ROUTER_PORT=8728
+      - ROUTER_USERNAME=admin
+      - ROUTER_PASSWORD=aszpvo
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - INFLUX_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA==
+      - INFLUX_ORG=ASIC
+      - INFLUX_BUCKET=power
+
+  web:
+    image: nginx:alpine
+    container_name: web
+    restart: unless-stopped
+    volumes:
+      - ./:/usr/share/nginx/html
+    ports:
+      - "80:80"
+
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb2:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME=root
+      - DOCKER_INFLUXDB_INIT_PASSWORD=rootr00t
+      - DOCKER_INFLUXDB_INIT_ORG=ASIC
+      - DOCKER_INFLUXDB_INIT_BUCKET=power
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA==
+
+volumes:
+  influxdb2:
