@@ -5,8 +5,7 @@ import logging
 import requests
 from dragon_rest.dragons import DragonAPI
 import routeros_api
-from influxdb_client import InfluxDBClient
-from datetime import datetime
+from influxdb_client import InfluxDBClient, Point
 
 
 class AsicAgent:
@@ -51,7 +50,6 @@ class AsicAgent:
         """
         while True:
             # TODO: Add hysteresis for enabling ASICS
-            # TODO: Add logging
             # Getting available and active power
             available_power = self.get_available_power()
             active_power = self.get_active_power()
@@ -85,8 +83,7 @@ class AsicAgent:
                         member.ip, member.port,
                         member.user, member.password
                     )
-            # Showing stats
-            self.show_status()
+
             # Sending stats to InfluxDB
             self.write_logs(available_power, active_power)
             # Sleeping before the next iteration
@@ -424,27 +421,66 @@ class AsicAgent:
     @orm.db_session
     def show_status(self):
         """
-        Prints statistics for ASICs
+        Returns a list of all ASICs
+
+        Returns
+        ----------
+        hosts
+            A list of all ASICs
         """
         # Fetching all hosts
         hosts = Hosts.select()
 
-        # Iterating through a list
-        for host in hosts:
-            logging.info([
-                host.id,
-                host.ip,
-                host.power,
-                host.power_group,
-                host.online]
+        if os.getenv('DEBUG'):
+            for host in hosts:
+                # Printing info about an ASIC
+                logging.info([
+                    host.id,
+                    host.ip,
+                    host.power,
+                    host.power_group,
+                    host.online]
+                )
+
+        return hosts
+
+    @orm.db_session
+    def write_logs(self, available_power, active_power):
+        """
+        Sends values of available and active power to InfluxDB
+
+        Parameters
+        ----------
+        available_power
+            A value of available power
+        active_power
+            A value of active power
+        """
+        try:
+            # Establishing connection
+            client = InfluxDBClient(
+                url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
+                token=self.influxdb['token'],
+                org=self.influxdb['org']
             )
 
-    def write_logs(self, available_power, active_power):
-        client = InfluxDBClient(
-            url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
-            token=self.influxdb['token'],
-            org=self.influxdb['org']
-        )
+            # Write script
+            write_api = client.write_api()
+
+            # Creating a measurement for available power
+            p = Point("power").tag("type", "available").field("power", available_power)
+            write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+
+            # Creating a measurement for active power
+            p = Point("power").tag("type", "active").field("power", active_power)
+            write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+
+            for host in self.show_status():
+                online = 1 if host.online == 'True' else 0
+                p = Point("power").tag("type", host.ip).field("online", online)
+                write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+        except Exception as e:
+            logging.error(f"Error writing logs: {e}")
 
 
 if __name__ == '__main__':
@@ -467,8 +503,8 @@ if __name__ == '__main__':
     INFLUXDB = {
         'host': 'localhost',
         'port': 8086,
-        'token': 'FDiJd70rkRTSp3WelU9AHhdDf82e_mG1zZSgP3oFegLjapVj63IpkKvl_VZilWO08acwTBUDsVwuasfQ-T-hBw==',
-        'org': 'asic',
+        'token': 'uctBdaWM6wYmVJoxn6NdYudLIZcYEnXoLgVKzy9iVrtcYqK305Krt4uMQO1CYeokvYXxaHpPErBWw8xamUAqHg==',
+        'org': 'ASIC',
         'bucket': 'power'
     }
 
