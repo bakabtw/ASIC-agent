@@ -5,6 +5,7 @@ import logging
 import requests
 from dragon_rest.dragons import DragonAPI
 import routeros_api
+from influxdb_client import InfluxDBClient, Point
 
 
 class AsicAgent:
@@ -20,6 +21,13 @@ class AsicAgent:
         } if os.getenv('ROUTER_IP') else ROUTER
         self.reset_asic_timeout = os.getenv('RESET_ASIC_TIMEOUT') or RESET_ASIC_TIMEOUT
         self.mikrotik_access_timeout = os.getenv('MIKROTIK_ACCESS_TIMEOUT') or MIKROTIK_ACCESS_TIMEOUT
+        self.influxdb = {
+            'host': os.getenv('INFLUX_HOST'),
+            'port': os.getenv('INFLUX_PORT'),
+            'token': os.getenv('INFLUX_USERNAME'),
+            'org': os.getenv('INFLUX_ORG'),
+            'bucket': os.getenv('INFLUX_BUCKET')
+        } if os.getenv('INFLUX_HOST') else INFLUXDB
 
         # Generating DB mapping
         db.generate_mapping(create_tables=True)
@@ -42,7 +50,6 @@ class AsicAgent:
         """
         while True:
             # TODO: Add hysteresis for enabling ASICS
-            # TODO: Add logging
             # Getting available and active power
             available_power = self.get_available_power()
             active_power = self.get_active_power()
@@ -76,8 +83,9 @@ class AsicAgent:
                         member.ip, member.port,
                         member.user, member.password
                     )
-            # Showing stats
-            self.show_status()
+
+            # Sending stats to InfluxDB
+            self.write_logs(available_power, active_power)
             # Sleeping before the next iteration
             time.sleep(self.sleep_timer)
 
@@ -413,20 +421,66 @@ class AsicAgent:
     @orm.db_session
     def show_status(self):
         """
-        Prints statistics for ASICs
+        Returns a list of all ASICs
+
+        Returns
+        ----------
+        hosts
+            A list of all ASICs
         """
         # Fetching all hosts
         hosts = Hosts.select()
 
-        # Iterating through a list
-        for host in hosts:
-            logging.info([
-                host.id,
-                host.ip,
-                host.power,
-                host.power_group,
-                host.online]
+        if os.getenv('DEBUG'):
+            for host in hosts:
+                # Printing info about an ASIC
+                logging.info([
+                    host.id,
+                    host.ip,
+                    host.power,
+                    host.power_group,
+                    host.online]
+                )
+
+        return hosts
+
+    @orm.db_session
+    def write_logs(self, available_power, active_power):
+        """
+        Sends values of available and active power to InfluxDB
+
+        Parameters
+        ----------
+        available_power
+            A value of available power
+        active_power
+            A value of active power
+        """
+        try:
+            # Establishing connection
+            client = InfluxDBClient(
+                url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
+                token=self.influxdb['token'],
+                org=self.influxdb['org']
             )
+
+            # Write script
+            write_api = client.write_api()
+
+            # Creating a measurement for available power
+            p = Point("power").tag("type", "available").field("power", available_power)
+            write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+
+            # Creating a measurement for active power
+            p = Point("power").tag("type", "active").field("power", active_power)
+            write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+
+            for host in self.show_status():
+                online = 1 if host.online == 'True' else 0
+                p = Point("power").tag("type", host.ip).field("online", online)
+                write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
+        except Exception as e:
+            logging.error(f"Error writing logs: {e}")
 
 
 if __name__ == '__main__':
@@ -438,12 +492,20 @@ if __name__ == '__main__':
     MIKROTIK_ACCESS_TIMEOUT = 1
     # URL for getting active power updates
     URL = "http://127.0.0.1:8000/power.json"
-    # Router credential
+    # Router credentials
     ROUTER = {
         'ip': '192.168.88.1',
         'port': 8728,
         'username': 'admin',
         'password': 'aszpvo'
+    }
+    # InfluxDB credentials
+    INFLUXDB = {
+        'host': 'localhost',
+        'port': 8086,
+        'token': 'uctBdaWM6wYmVJoxn6NdYudLIZcYEnXoLgVKzy9iVrtcYqK305Krt4uMQO1CYeokvYXxaHpPErBWw8xamUAqHg==',
+        'org': 'ASIC',
+        'bucket': 'power'
     }
 
     # Checking for DEBUG environment
