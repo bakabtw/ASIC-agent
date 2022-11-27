@@ -9,9 +9,9 @@ services:
       - influxdb
       - web
     environment:
-      - SLEEP_TIMER=1
-      - RESET_ASIC_TIMEOUT=1
-      - MIKROTIK_ACCESS_TIMEOUT=1
+      - SLEEP_TIMER=15
+      - RESET_ASIC_TIMEOUT=5
+      - MIKROTIK_ACCESS_TIMEOUT=5
       - URL=http://web/power.json
       - ROUTER_IP=192.168.88.1
       - ROUTER_PORT=8728

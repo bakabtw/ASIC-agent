@@ -485,11 +485,11 @@ class AsicAgent:
 
 if __name__ == '__main__':
     # Time between checks
-    SLEEP_TIMER = 1
+    SLEEP_TIMER = 15
     # Timeout for accessing ASIC
-    RESET_ASIC_TIMEOUT = 1
+    RESET_ASIC_TIMEOUT = 5
     # Timeout for accessing Mikrotik router
-    MIKROTIK_ACCESS_TIMEOUT = 1
+    MIKROTIK_ACCESS_TIMEOUT = 5
     # URL for getting active power updates
     URL = "http://127.0.0.1:8000/power.json"
     # Router credentials
