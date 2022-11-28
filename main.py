@@ -31,6 +31,15 @@ class AsicAgent:
             'bucket': os.getenv('INFLUX_BUCKET')
         } if os.getenv('INFLUX_HOST') else INFLUXDB
 
+        # Establishing connection with InfluxDB
+        self.influxdb_client = InfluxDBClient(
+            url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
+            token=self.influxdb['token'],
+            org=self.influxdb['org']
+        )
+        # InfluxDB write API
+        self.influxdb_write_api = self.influxdb_client.write_api()
+
         # Generating DB mapping
         db.generate_mapping(create_tables=True)
 
@@ -459,15 +468,8 @@ class AsicAgent:
             A value of active power
         """
         try:
-            # Establishing connection
-            client = InfluxDBClient(
-                url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
-                token=self.influxdb['token'],
-                org=self.influxdb['org']
-            )
-
-            # Write script
-            write_api = client.write_api()
+            # Fetching InfluxDB write API
+            write_api = self.influxdb_write_api
 
             # Creating a measurement for available power
             p = Point("power").tag("type", "available").field("power", available_power)
