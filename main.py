@@ -11,7 +11,7 @@ from influxdb_client import InfluxDBClient, Point
 class AsicAgent:
     def __init__(self):
         # Setting up variables
-        self.sleep_timer = int(os.getenv('SLEEP_TIMER')) or SLEEP_TIMER
+        self.sleep_timer = int(os.getenv('SLEEP_TIMER')) if os.getenv('SLEEP_TIMER') else SLEEP_TIMER
         self.url = os.getenv('URL') or URL
         self.router = {
             'ip': os.getenv('ROUTER_IP'),
@@ -19,8 +19,10 @@ class AsicAgent:
             'username': os.getenv('ROUTER_USERNAME'),
             'password': os.getenv('ROUTER_PASSWORD')
         } if os.getenv('ROUTER_IP') else ROUTER
-        self.reset_asic_timeout = int(os.getenv('RESET_ASIC_TIMEOUT')) or RESET_ASIC_TIMEOUT
-        self.mikrotik_access_timeout = int(os.getenv('MIKROTIK_ACCESS_TIMEOUT')) or MIKROTIK_ACCESS_TIMEOUT
+        self.reset_asic_timeout = int(os.getenv('RESET_ASIC_TIMEOUT')) if os.getenv('RESET_ASIC_TIMEOUT')\
+            else RESET_ASIC_TIMEOUT
+        self.mikrotik_access_timeout = int(os.getenv('MIKROTIK_ACCESS_TIMEOUT')) if os.getenv('MIKROTIK_ACCESS_TIMEOUT') \
+            else MIKROTIK_ACCESS_TIMEOUT
         self.influxdb = {
             'host': os.getenv('INFLUX_HOST'),
             'port': int(os.getenv('INFLUX_PORT')),
