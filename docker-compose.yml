@@ -2,7 +2,7 @@ version: '3'
 
 services:
   asic-agent:
-    build: .
+    build: ./agent/
     container_name: asic-agent
     restart: unless-stopped
     depends_on:
@@ -28,7 +28,7 @@ services:
     container_name: web
     restart: unless-stopped
     volumes:
-      - ./:/usr/share/nginx/html
+      - ./examples/:/usr/share/nginx/html
     ports:
       - "80:80"
 
