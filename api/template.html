@@ -66,12 +66,24 @@
             console.log(data);
 
             let template = {'<>':'div', 'class': 'row', 'html':
-                      [{'<>':'td', html:'<div class="column">${id}</div><div class="column">${ip}</div><div class="column">${power}W</div><div class="column">${phase}</div><div class="column">${power_group}</div><div class="column">${online}</div>'}]
+                      [{'<>':'td', html:'<div class="column">${id}</div><div class="column">${ip}</div><div class="column">${power}W</div><div class="column">${phase}</div><div class="column">${power_group}</div><div class="column online">${online}</div>'}]
                            };
 
             //render
             document.getElementById('stat_table').innerHTML = '<div class="column grey">ID</div><div class="column grey">IP</div><div class="column grey">Power</div><div class="column grey">Phase</div><div class="column grey">Power group</div><div class="column grey">Status</div>';
             document.getElementById('stat_table').innerHTML += ( json2html.render(data,template) );
+
+            // Updating colors for online status
+            const matches = document.getElementsByClassName('online');
+
+            for (let i = 0; i < matches.length; i++) {
+              if (matches.item(i).textContent == 'False') {
+                matches.item(i).classList.add('red');
+              }
+              else {
+                matches.item(i).classList.add('green');
+              }
+            }
 
             })
             .catch(function(error) {
