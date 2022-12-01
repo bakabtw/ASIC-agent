@@ -5,6 +5,8 @@ services:
     build: ./agent/
     container_name: asic-agent
     restart: unless-stopped
+    volumes:
+      - ./agent/asics.db:/app/asics.db
     depends_on:
       - influxdb
       - web
@@ -27,6 +29,8 @@ services:
     build: ./api/
     container_name: web
     restart: unless-stopped
+    volumes:
+      - ./agent/asics.db:/app/asics.db
     ports:
       - "8000:80"
 

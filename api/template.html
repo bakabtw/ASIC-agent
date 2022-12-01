@@ -10,6 +10,7 @@
   <title>ASIC power management</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css" integrity="sha512-KXol4x3sVoO+8ZsWPFI/r5KBVB/ssCGB5tsv2nVOKwLg33wTFP3fmnXa47FdSVIshVTgsYk/1734xSk9aFIa4A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/json2html/2.1.0/json2html.min.js"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js" integrity="sha512-Xo0Jh8MsOn72LGV8kU5LsclG7SUzJsWGhXbWcYs2MAmChkQzwiW/yTQwdJ8w6UA9C6EVG18GHb/TrYpYCjyAQw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
   <style type="text/css">
@@ -23,7 +24,7 @@
       margin-top: -100px;
     }
     .column {
-      max-width: 450px;
+      max-width: 800px;
     }
   </style>
   <script>
@@ -43,6 +44,7 @@
             });
     }
     function getData() {
+        getStatus();
         fetch("/get_power")
             .then(response => response.json())
             .then(function(data) {
@@ -56,6 +58,29 @@
             console.log(error);
             });
     }
+    function getStatus() {
+        fetch("/asic_status")
+            .then(response => response.json())
+            .then(function(data) {
+
+            console.log(data);
+
+            let template = {'<>':'div', 'class': 'row', 'html':
+                      [{'<>':'td', html:'<div class="column">${id}</div><div class="column">${ip}</div><div class="column">${power}W</div><div class="column">${phase}</div><div class="column">${power_group}</div><div class="column green">${online}</div>'}]
+                           };
+
+            //render
+            document.getElementById('stat_table').innerHTML = '<div class="column grey">ID</div><div class="column grey">IP</div><div class="column grey">Power</div><div class="column grey">Phase</div><div class="column grey">Power group</div><div class="column grey">Status</div>';
+            document.getElementById('stat_table').innerHTML += ( json2html.render(data,template) );
+
+            })
+            .catch(function(error) {
+            // If there is any error you will catch them here
+            console.log(error);
+            });
+    }
+
+    window.onload = getStatus()
   </script>
 </head>
 <body>
@@ -84,8 +109,10 @@
       <div class="ui error message"></div>
 
     </form>
+    <div id="stat_table" class="ui six column grid segment">
+    </div>
+    </div>
   </div>
 </div>
-
 </body>
 </html>
