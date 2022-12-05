@@ -17,6 +17,9 @@ It's important to add a firewall rule in RouterOS for blocking internet access b
     python3 main.py
 ```
 
+# Live Demo
+You can check out a live demo here: https://power.knst.me/
+
 # Requirements
 - requests
 - pony
