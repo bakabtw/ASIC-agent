@@ -9,7 +9,7 @@ services:
       - ./agent/asics.db:/app/asics.db
     depends_on:
       - influxdb
-      - web
+      - backend
     environment:
       - SLEEP_TIMER=15 # Time between checks
       - RESET_ASIC_TIMEOUT=5 # Timeout for accessing ASIC
@@ -25,18 +25,27 @@ services:
       - INFLUX_ORG=ASIC # InfluxDB organization
       - INFLUX_BUCKET=power # InfluxDB bucket
 
-  web:
+  backend:
     build: ./api/
-    container_name: web
+    container_name: asic-agent-backend
     restart: unless-stopped
     volumes:
       - ./agent/asics.db:/app/asics.db
     ports:
       - "8000:80"
 
+  frontend:
+    build: https://github.com/bakabtw/asic-agent-frontend.git
+    container_name: asic-agent-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
   influxdb:
     image: influxdb
-    container_name: influxdb
+    container_name: asic-agent-influxdb
     restart: unless-stopped
     ports:
       - "8086:8086"
