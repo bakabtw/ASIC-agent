@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from pony import orm
 
@@ -7,16 +7,13 @@ app = FastAPI()
 
 app.state.available_power = 0
 
-
-@app.get("/")
-async def root():
-    return HTMLResponse(
-        content=''.join(
-            map(str, open('template.html').readlines())
-        ),
-        status_code=200
-    )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/get_power")
 async def get_power():
