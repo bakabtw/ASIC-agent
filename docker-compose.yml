@@ -14,7 +14,7 @@ services:
       - SLEEP_TIMER=15 # Time between checks
       - RESET_ASIC_TIMEOUT=5 # Timeout for accessing ASIC
       - MIKROTIK_ACCESS_TIMEOUT=5 # Timeout for accessing Mikrotik router
-      - URL=http://web/get_power # URL for getting active power updates
+      - URL=http://backend/get_power # URL for getting active power updates
       - ROUTER_IP=192.168.88.1 # Mikrotik IP
       - ROUTER_PORT=8728 # Mikrotik API port
       - ROUTER_USERNAME=admin # Mikrotik user
@@ -35,7 +35,10 @@ services:
       - "8000:80"
 
   frontend:
-    build: https://github.com/bakabtw/asic-agent-frontend.git
+    build:
+      context: https://github.com/bakabtw/asic-agent-frontend.git
+      args:
+        - HOST=http://localhost:8000
     container_name: asic-agent-frontend
     restart: unless-stopped
     depends_on:
