@@ -2,7 +2,7 @@ version: '3'
 
 services:
   asic-agent:
-    build: ./agent/
+    image: bakabtw/asic-agent
     container_name: asic-agent
     restart: unless-stopped
     volumes:
@@ -26,7 +26,7 @@ services:
       - INFLUX_BUCKET=power # InfluxDB bucket
 
   backend:
-    build: ./api/
+    image: bakabtw/asic-agent-api
     container_name: asic-agent-backend
     restart: unless-stopped
     volumes:
