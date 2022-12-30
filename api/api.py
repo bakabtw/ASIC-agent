@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from pony import orm
@@ -82,6 +82,11 @@ async def get_asic(asic_id: int):
         'power': host.power,
         'phase': host.phase
     }
+
+
+@app.post("/update_asic")
+async def update_asic(request: Request):
+    return await request.json()
 
 
 @app.get("/asic_status")
