@@ -57,9 +57,7 @@ async def get_power():
 async def set_power(power: int):
     app.state.available_power = power
 
-    return {
-        'success': True
-    }
+    return {'success': True}
 
 
 @app.get("/get_asic/{asic_id}")
@@ -68,9 +66,7 @@ async def get_asic(asic_id: int):
         host = Hosts.get(id=asic_id)
 
     if not host:
-        return {
-            'detail': 'Not Found'
-        }
+        return {'detail': 'Not Found'}
 
     return {
         'id': host.id,
@@ -104,6 +100,7 @@ async def update_asic(request: Request):
                 power_group=data['power_group'],
                 online='false'
             )
+
             return {'success': 'true', 'status': 'created'}
         # Updating existing entry
         else:
