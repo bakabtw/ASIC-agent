@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  asic-agent:
+    image: bakabtw/asic-agent
+    container_name: asic-agent
+    restart: unless-stopped
+    volumes:
+      - ./agent/asics.db:/app/asics.db
+    depends_on:
+      - influxdb
+      - backend
+    environment:
+      - SLEEP_TIMER=15 # Time between checks
+      - RESET_ASIC_TIMEOUT=5 # Timeout for accessing ASIC
+      - MIKROTIK_ACCESS_TIMEOUT=5 # Timeout for accessing Mikrotik router
+      - URL=http://backend/get_power # URL for getting active power updates
+      - ROUTER_IP=192.168.88.1 # Mikrotik IP
+      - ROUTER_PORT=8728 # Mikrotik API port
+      - ROUTER_USERNAME=admin # Mikrotik user
+      - ROUTER_PASSWORD=aszpvo # Mikrotik password
+      - INFLUX_HOST=influxdb # InfluxDB host
+      - INFLUX_PORT=8086 # InfluxDB port
+      - INFLUX_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA== # InfluxDB token
+      - INFLUX_ORG=ASIC # InfluxDB organization
+      - INFLUX_BUCKET=power # InfluxDB bucket
+
+  backend:
+    build: ./api/
+    container_name: asic-agent-backend
+    restart: unless-stopped
+    volumes:
+      - ./agent/asics.db:/app/asics.db
+    ports:
+      - "8000:80"
+
+  frontend:
+    build:
+      context: https://github.com/bakabtw/asic-agent-frontend.git
+      args:
+        - HOST=http://localhost:8000 # URL to API backend
+    container_name: asic-agent-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+  influxdb:
+    image: influxdb
+    container_name: asic-agent-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb2:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=root # InfluxDB default username
+      - DOCKER_INFLUXDB_INIT_PASSWORD=rootr00t # InfluxDB default password
+      - DOCKER_INFLUXDB_INIT_ORG=ASIC # InfluxDB default organization
+      - DOCKER_INFLUXDB_INIT_BUCKET=power # InfluxDB default bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA== # InfluxDB default token
+
+volumes:
+  influxdb2:
