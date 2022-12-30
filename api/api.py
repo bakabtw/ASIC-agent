@@ -15,6 +15,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Creating DB
+db = orm.Database()
+db.bind(provider='sqlite', filename='asics.db', create_db=True)
+
+
+# Defining a table for ASICs
+class Hosts(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    ip = orm.Required(str)
+    port = orm.Required(int)
+    user = orm.Required(str)
+    password = orm.Required(str)
+    type = orm.Required(str)
+    power = orm.Required(int)
+    phase = orm.Required(str)
+    power_group = orm.Required(int)
+    online = orm.Required(str)
+
+
+# Defining a table for power groups
+class PowerGroups(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    total_power = orm.Required(int)
+    online = orm.Required(str)
+
+
+db.generate_mapping()
+
+
 @app.get("/get_power")
 async def get_power():
     return {
@@ -33,33 +62,30 @@ async def set_power(power: int):
     }
 
 
+@app.get("/get_asic/{asic_id}")
+async def get_asic(asic_id: int):
+    with orm.db_session:
+        host = Hosts.get(id=asic_id)
+
+    if not host:
+        return {
+            'detail': 'Not Found'
+        }
+
+    return {
+        'id': host.id,
+        'ip': host.ip,
+        'port': host.port,
+        'user': host.user,
+        'password': host.password,
+        'type': host.type,
+        'power': host.power,
+        'phase': host.phase
+    }
+
+
 @app.get("/asic_status")
 async def asic_status():
-    # Creating DB
-    db = orm.Database()
-    db.bind(provider='sqlite', filename='asics.db', create_db=True)
-
-    # Defining a table for ASICs
-    class Hosts(db.Entity):
-        id = orm.PrimaryKey(int, auto=True)
-        ip = orm.Required(str)
-        port = orm.Required(int)
-        user = orm.Required(str)
-        password = orm.Required(str)
-        type = orm.Required(str)
-        power = orm.Required(int)
-        phase = orm.Required(str)
-        power_group = orm.Required(int)
-        online = orm.Required(str)
-
-    # Defining a table for power groups
-    class PowerGroups(db.Entity):
-        id = orm.PrimaryKey(int, auto=True)
-        total_power = orm.Required(int)
-        online = orm.Required(str)
-
-    db.generate_mapping()
-
     with orm.db_session:
         hosts = Hosts.select()
         output = []
@@ -76,7 +102,5 @@ async def asic_status():
                     'online': host.online
                 }
             )
-
-    db.disconnect()
 
     return output
