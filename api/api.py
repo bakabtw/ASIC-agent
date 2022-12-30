@@ -80,13 +80,43 @@ async def get_asic(asic_id: int):
         'password': host.password,
         'type': host.type,
         'power': host.power,
-        'phase': host.phase
+        'phase': host.phase,
+        'power_group': host.power_group
     }
 
 
 @app.post("/update_asic")
 async def update_asic(request: Request):
-    return await request.json()
+    with orm.db_session:
+        data = await request.json()
+        host = Hosts.get(id=data['id'])
+
+        # Creating new entry
+        if not host:
+            asic = Hosts(
+                ip=data['ip'],
+                port=data['port'],
+                user=data['user'],
+                password=data['password'],
+                type=data['type'],
+                power=data['power'],
+                phase=data['phase'],
+                power_group=data['power_group'],
+                online='false'
+            )
+            return {'success': 'true', 'status': 'created'}
+        # Updating existing entry
+        else:
+            host.ip = data['ip']
+            host.port = data['port']
+            host.user = data['user']
+            host.password = data['password']
+            host.type = data['type']
+            host.power = data['power']
+            host.phase = data['phase']
+            host.power_group = data['power_group']
+
+            return {'success': 'true', 'status': 'updated'}
 
 
 @app.get("/asic_status")
