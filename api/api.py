@@ -119,6 +119,19 @@ async def update_asic(request: Request):
             return {'success': 'true', 'status': 'updated'}
 
 
+@app.post("/delete_asic/{asic_id}")
+async def delete_asic(asic_id: int):
+    with orm.db_session:
+        host = Hosts.get(id=asic_id)
+
+        if not host:
+            return {'detail': 'Not Found'}
+        else:
+            host.delete()
+
+            return {'success': 'true', 'status': 'updated'}
+
+
 @app.get("/asic_status")
 async def asic_status():
     with orm.db_session:
