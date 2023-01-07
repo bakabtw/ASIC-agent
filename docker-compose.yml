@@ -35,10 +35,7 @@ services:
       - "8000:80"
 
   frontend:
-    build:
-      context: https://github.com/bakabtw/asic-agent-frontend.git
-      args:
-        - HOST=http://localhost:8000 # URL to API backend
+    image: bakabtw/asic-agent-frontend:production
     container_name: asic-agent-frontend
     restart: unless-stopped
     depends_on:
