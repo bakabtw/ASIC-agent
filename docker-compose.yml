@@ -19,6 +19,7 @@ services:
       - ROUTER_PORT=8728 # Mikrotik API port
       - ROUTER_USERNAME=admin # Mikrotik user
       - ROUTER_PASSWORD=aszpvo # Mikrotik password
+      - INFLUX_SCHEME=http # InfluxDB scheme (http / https)
       - INFLUX_HOST=influxdb # InfluxDB host
       - INFLUX_PORT=8086 # InfluxDB port
       - INFLUX_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA== # InfluxDB token

@@ -24,6 +24,7 @@ class AsicAgent:
         self.mikrotik_access_timeout = int(os.getenv('MIKROTIK_ACCESS_TIMEOUT')) if os.getenv('MIKROTIK_ACCESS_TIMEOUT') \
             else MIKROTIK_ACCESS_TIMEOUT
         self.influxdb = {
+            'scheme': os.getenv('INFLUX_SCHEME'),
             'host': os.getenv('INFLUX_HOST'),
             'port': int(os.getenv('INFLUX_PORT')),
             'token': os.getenv('INFLUX_TOKEN'),
@@ -33,7 +34,7 @@ class AsicAgent:
 
         # Establishing connection with InfluxDB
         self.influxdb_client = InfluxDBClient(
-            url=f"http://{self.influxdb['host']}:{self.influxdb['port']}",
+            url=f"{self.influxdb['scheme']}://{self.influxdb['host']}:{self.influxdb['port']}",
             token=self.influxdb['token'],
             org=self.influxdb['org']
         )
