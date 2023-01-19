@@ -6,6 +6,7 @@ from pony import orm
 app = FastAPI()
 
 app.state.available_power = 0
+app.state.active_power = 0
 
 app.add_middleware(
     CORSMiddleware,
@@ -149,3 +150,19 @@ async def asic_status():
             )
 
     return output
+
+
+@app.get("/get_active_power")
+async def get_power():
+    return {
+        'success': True,
+        'time': datetime.now(),
+        'power': app.state.active_power
+    }
+
+
+@app.post("/set_active_power/{power}")
+async def set_power(power: int):
+    app.state.active_power = power
+
+    return {'success': True}
