@@ -13,6 +13,14 @@ class AsicAgent:
         # Setting up variables
         self.sleep_timer = int(os.getenv('SLEEP_TIMER')) if os.getenv('SLEEP_TIMER') else SLEEP_TIMER
         self.url = os.getenv('URL') or URL
+        self.endpoints = {
+            'GET': {
+                'available_power': f'{self.url}/get_power'
+            },
+            'UPDATE': {
+                'active_power': f'{self.url}/set_active_power'
+            }
+        }
         self.router = {
             'ip': os.getenv('ROUTER_IP'),
             'port': int(os.getenv('ROUTER_PORT')),
@@ -98,6 +106,8 @@ class AsicAgent:
 
             # Sending stats to InfluxDB
             self.write_logs(available_power, active_power)
+            # Updating active power
+            self.update_active_power(active_power)
             # Sleeping before the next iteration
             time.sleep(self.sleep_timer)
 
@@ -114,7 +124,7 @@ class AsicAgent:
 
         try:
             # Fetching and parsing a json file with available power
-            r = requests.get(self.url)
+            r = requests.get(self.endpoints['GET']['available_power'])
             data = r.json()
         except Exception as e:
             logging.error(f"Download error {e}")
@@ -487,6 +497,17 @@ class AsicAgent:
         except Exception as e:
             logging.error(f"Error writing logs: {e}")
 
+    def update_active_power(self, active_power):
+        data = {}
+
+        try:
+            # Sending POST request to the endpoint
+            r = requests.post(f"{self.endpoints['UPDATE']['active_power']}/{active_power}")
+            data = r.json()
+        except Exception as e:
+            logging.error(f"Download error {e}")
+            data['success'] = False  # Fetching data wasn't successful
+
 
 if __name__ == '__main__':
     # Time between checks
@@ -496,7 +517,7 @@ if __name__ == '__main__':
     # Timeout for accessing Mikrotik router
     MIKROTIK_ACCESS_TIMEOUT = 5
     # URL for getting active power updates
-    URL = "http://127.0.0.1:8000/power.json"
+    URL = "http://127.0.0.1:8000"
     # Router credentials
     ROUTER = {
         'ip': '192.168.88.1',
@@ -506,6 +527,7 @@ if __name__ == '__main__':
     }
     # InfluxDB credentials
     INFLUXDB = {
+        'scheme': 'http',
         'host': 'localhost',
         'port': 8086,
         'token': 'uctBdaWM6wYmVJoxn6NdYudLIZcYEnXoLgVKzy9iVrtcYqK305Krt4uMQO1CYeokvYXxaHpPErBWw8xamUAqHg==',
