@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from pony import orm
 import uvicorn
+from dragon_rest.dragons import DragonAPI
 
 app = FastAPI()
 
@@ -167,6 +168,27 @@ async def set_power(power: int):
     app.state.active_power = power
 
     return {'success': True}
+
+
+@app.get("/get_asic_temp/{asic_id}")
+async def get_asic_temp(asic_id: int):
+    with orm.db_session:
+        host = Hosts.get(id=asic_id)
+
+    if not host:
+        return {'detail': 'Not Found'}
+
+    try:
+        # Connecting to ASIC via API
+        api = DragonAPI(f"{host.ip}:{host.port}",
+                        username=host.user, password=host.password,
+                        timeout=15)
+
+        r = api.summary()
+    except Exception as e:
+        return {'detail': 'Error', 'error': e}
+
+    return r
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)
