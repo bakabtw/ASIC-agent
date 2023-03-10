@@ -4,6 +4,7 @@ from datetime import datetime
 from pony import orm
 import uvicorn
 from dragon_rest.dragons import DragonAPI
+from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI()
 
@@ -171,7 +172,7 @@ async def set_power(power: int):
 
 
 @app.get("/get_asic_temp/{asic_id}")
-async def get_asic_temp(asic_id: int):
+def get_asic_temp(asic_id: int):
     with orm.db_session:
         host = Hosts.get(id=asic_id)
 
@@ -182,7 +183,7 @@ async def get_asic_temp(asic_id: int):
         # Connecting to ASIC via API
         api = DragonAPI(f"{host.ip}:{host.port}",
                         username=host.user, password=host.password,
-                        timeout=15)
+                        timeout=5)
 
         r = api.summary()
     except Exception:
@@ -191,14 +192,30 @@ async def get_asic_temp(asic_id: int):
 
     # return r
     # Temporary dummy response
-    return {
+    return [{
         'id': asic_id,
         'temperature': [
             {'board_id': 0, 'temperature': 81.0},
             {'board_id': 1, 'temperature': 82.0},
             {'board_id': 3, 'temperature': 83.0}
         ]
-    }
+    }]
+
+
+@app.get("/asics_temp")
+async def asics_temp():
+    with orm.db_session:
+        hosts = Hosts.select()
+        pool = ThreadPoolExecutor(max_workers=36)
+        ids = []
+
+        for host in hosts:
+            ids.append(host.id)
+
+    results = pool.map(get_asic_temp, ids)
+    pool.shutdown()
+
+    return results
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)
