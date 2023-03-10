@@ -1,3 +1,4 @@
 fastapi~=0.88.0
 uvicorn~=0.20.0
 pony~=0.7.16
+dragon_rest~=0.2.3
