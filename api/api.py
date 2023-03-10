@@ -185,8 +185,8 @@ async def get_asic_temp(asic_id: int):
                         timeout=15)
 
         r = api.summary()
-    except Exception as e:
-        return {'detail': 'Error', 'error': e}
+    except Exception:
+        return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
 
     return r
 
