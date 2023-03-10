@@ -186,9 +186,19 @@ async def get_asic_temp(asic_id: int):
 
         r = api.summary()
     except Exception:
-        return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
+        pass
+        # return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
 
-    return r
+    # return r
+    # Temporary dummy response
+    return {
+        'id': asic_id,
+        'temperature': [
+            {'board_id': 0, 'temperature': 81.0},
+            {'board_id': 1, 'temperature': 82.0},
+            {'board_id': 3, 'temperature': 83.0}
+        ]
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)
