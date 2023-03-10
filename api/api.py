@@ -2,6 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from pony import orm
+import uvicorn
+from dragon_rest.dragons import DragonAPI
+from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI()
 
@@ -166,3 +169,90 @@ async def set_power(power: int):
     app.state.active_power = power
 
     return {'success': True}
+
+
+@app.get("/get_asic_temp/{asic_id}")
+def get_asic_temp(asic_id: int):
+    with orm.db_session:
+        host = Hosts.get(id=asic_id)
+
+    if not host:
+        return {'detail': 'Not Found'}
+
+    try:
+        # Connecting to ASIC via API
+        api = DragonAPI(f"{host.ip}:{host.port}",
+                        username=host.user, password=host.password,
+                        timeout=5)
+
+        r = api.summary()
+    except Exception:
+        pass
+        # return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
+
+    # return r
+    # Temporary dummy response
+    return {
+        'id': asic_id,
+        'temperature': [
+            {'board_id': 0, 'temperature': 81.0},
+            {'board_id': 1, 'temperature': 82.0},
+            {'board_id': 3, 'temperature': 83.0}
+        ]
+    }
+
+
+@app.get("/asics_temp")
+async def asics_temp():
+    with orm.db_session:
+        hosts = Hosts.select()
+        pool = ThreadPoolExecutor(max_workers=36)
+        ids = []
+
+        for host in hosts:
+            ids.append(host.id)
+
+    results = pool.map(get_asic_temp, ids)
+    pool.shutdown()
+
+    return results
+
+
+@app.get("/get_container_temp")
+async def get_container_temp():
+    # Temporary dummy response
+    return [
+        {
+            'name': 'internal',
+            'temperature': 22.0,
+            'humidity': 0.3
+        },
+        {
+            'name': 'external',
+            'temperature': -25.5
+        },
+        {
+            'name': 'hot_aisle',
+            'temperature': 35.2,
+            'humidity': 0.2
+        },
+        {
+            'name': 'cold_aisle',
+            'temperature': 25.3,
+            'humidity': 0.23
+        }
+    ]
+
+
+@app.get("/get_meter_metrics")
+async def get_meter_metrics():
+    # Temporary dummy response
+    return {
+        'success': True,
+        'time': datetime.now(),
+        'power': 123456
+    }
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8080)
