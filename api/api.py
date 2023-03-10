@@ -219,7 +219,7 @@ async def asics_temp():
 
 
 @app.get("/get_container_temp")
-def get_container_temp():
+async def get_container_temp():
     # Temporary dummy response
     return [
         {
@@ -242,6 +242,16 @@ def get_container_temp():
             'humidity': 0.23
         }
     ]
+
+
+@app.get("/get_meter_metrics")
+async def get_meter_metrics():
+    # Temporary dummy response
+    return {
+        'success': True,
+        'time': datetime.now(),
+        'power': 123456
+    }
 
 
 if __name__ == "__main__":
