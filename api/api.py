@@ -203,7 +203,7 @@ def get_asic_temp(asic_id: int):
 
 
 @app.get("/asics_temp")
-async def asics_temp():
+def asics_temp():
     with orm.db_session:
         hosts = Hosts.select()
         pool = ThreadPoolExecutor(max_workers=36)
