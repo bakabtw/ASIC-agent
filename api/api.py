@@ -10,6 +10,7 @@ app = FastAPI()
 
 app.state.available_power = 0
 app.state.active_power = 0
+app.state.monitoring = {}
 
 app.add_middleware(
     CORSMiddleware,
@@ -218,41 +219,20 @@ def asics_temp():
     return results
 
 
-@app.get("/get_container_temp")
-async def get_container_temp():
-    # Temporary dummy response
-    return [
-        {
-            'name': 'internal',
-            'temperature': 22.0,
-            'humidity': 0.3
-        },
-        {
-            'name': 'external',
-            'temperature': -25.5
-        },
-        {
-            'name': 'hot_aisle',
-            'temperature': 35.2,
-            'humidity': 0.2
-        },
-        {
-            'name': 'cold_aisle',
-            'temperature': 25.3,
-            'humidity': 0.23
-        }
-    ]
+@app.post("/monitoring")
+async def update_monitoring(request: Request):
+    data = await request.json()
+    app.state.monitoring = data
 
-
-@app.get("/get_meter_metrics")
-async def get_meter_metrics():
-    # Temporary dummy response
     return {
         'success': True,
         'time': datetime.now(),
-        'power': 123456
     }
 
+
+@app.get("/monitoring")
+async def get_monitoring():
+    return app.state.monitoring
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)
