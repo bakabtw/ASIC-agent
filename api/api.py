@@ -188,19 +188,12 @@ def get_asic_temp(asic_id: int):
 
         r = api.summary()
     except Exception:
-        pass
-        # return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
+        return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
 
-    # return r
-    # Temporary dummy response
-    return {
-        'id': asic_id,
-        'temperature': [
-            {'board_id': 0, 'temperature': 81.0},
-            {'board_id': 1, 'temperature': 82.0},
-            {'board_id': 3, 'temperature': 83.0}
-        ]
-    }
+    # Adding ASIC id to response
+    r['id'] = asic_id
+
+    return r
 
 
 @app.get("/asics_temp")
