@@ -188,7 +188,7 @@ def get_asic_info(asic_id: int):
 
         r = api.summary()
     except Exception:
-        return {'success': False, 'error': 'Cannot connect to the ASIC'}
+        r = {'success': False, 'error': 'Cannot connect to the ASIC'}
 
     # Adding ASIC id to response
     r['id'] = asic_id
@@ -210,6 +210,37 @@ def asics_info():
     pool.shutdown()
 
     return results
+
+
+@app.get("/asics_temp")
+def asics_temp():
+    # Fetching data from ASICS
+    fields = asics_info()
+    r = []
+
+    # Iterating through ASICs
+    for field in fields:
+        # Checking if there's a response from ASIC
+        if field['success'] is False:
+            continue
+
+        asic_id = field['id']
+        temperature = []
+
+        # Iterating through boards
+        for dev in field['DEVS']:
+            temperature.append({
+                    'board_id': dev['ID'],
+                    'temperature': dev['Temperature']
+            })
+
+        # Adding data to response
+        r.append({
+                'id': asic_id,
+                'temperature': temperature
+        })
+
+    return r
 
 
 @app.post("/monitoring")
