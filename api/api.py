@@ -172,8 +172,8 @@ async def set_power(power: int):
     return {'success': True}
 
 
-@app.get("/get_asic_temp/{asic_id}")
-def get_asic_temp(asic_id: int):
+@app.get("/get_asic_info/{asic_id}", include_in_schema=False)
+def get_asic_info(asic_id: int):
     with orm.db_session:
         host = Hosts.get(id=asic_id)
 
@@ -188,7 +188,7 @@ def get_asic_temp(asic_id: int):
 
         r = api.summary()
     except Exception:
-        return {'detail': 'Error', 'error': 'Cannot connect to the ASIC'}
+        return {'success': False, 'error': 'Cannot connect to the ASIC'}
 
     # Adding ASIC id to response
     r['id'] = asic_id
@@ -196,8 +196,8 @@ def get_asic_temp(asic_id: int):
     return r
 
 
-@app.get("/asics_temp")
-def asics_temp():
+@app.get("/asics_info", include_in_schema=False)
+def asics_info():
     with orm.db_session:
         hosts = Hosts.select()
         pool = ThreadPoolExecutor(max_workers=36)
@@ -206,7 +206,7 @@ def asics_temp():
         for host in hosts:
             ids.append(host.id)
 
-    results = pool.map(get_asic_temp, ids)
+    results = pool.map(get_asic_info, ids)
     pool.shutdown()
 
     return results
