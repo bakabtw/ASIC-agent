@@ -5,6 +5,7 @@ from pony import orm
 import uvicorn
 from dragon_rest.dragons import DragonAPI
 from concurrent.futures import ThreadPoolExecutor
+from cachetools import cached, TTLCache
 
 app = FastAPI()
 
@@ -196,6 +197,7 @@ def get_asic_info(asic_id: int):
     return r
 
 
+@cached(cache=TTLCache(maxsize=1024, ttl=60))
 @app.get("/asics_info", include_in_schema=False)
 def asics_info():
     with orm.db_session:
