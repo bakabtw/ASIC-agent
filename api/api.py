@@ -174,6 +174,7 @@ async def set_power(power: int):
 
 
 @app.get("/get_asic_info/{asic_id}", include_in_schema=False)
+@cached(cache=TTLCache(maxsize=1024, ttl=60))
 def get_asic_info(asic_id: int):
     with orm.db_session:
         host = Hosts.get(id=asic_id)
@@ -197,7 +198,6 @@ def get_asic_info(asic_id: int):
     return r
 
 
-@cached(cache=TTLCache(maxsize=1024, ttl=60))
 @app.get("/asics_info", include_in_schema=False)
 def asics_info():
     with orm.db_session:
