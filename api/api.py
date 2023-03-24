@@ -6,6 +6,7 @@ import uvicorn
 from dragon_rest.dragons import DragonAPI
 from concurrent.futures import ThreadPoolExecutor
 from cachetools import cached, TTLCache
+import json
 
 app = FastAPI()
 
@@ -217,7 +218,7 @@ def asics_info():
 @app.get("/asics_temp")
 def asics_temp():
     # Fetching data from ASICS
-    fields = asics_info()
+    fields = json.loads(asics_info())
     r = []
 
     # Iterating through ASICs
@@ -245,10 +246,11 @@ def asics_temp():
     return r
 
 
+# noinspection SpellCheckingInspection
 @app.get("/get_power_by_hashrate")
 def get_power_by_hashrate():
     # Fetching data from ASICS
-    fields = asics_info()
+    fields = json.loads(asics_info())
     hashrate = 0.0
 
     # Iterating through ASICs
