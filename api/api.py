@@ -245,6 +245,28 @@ def asics_temp():
     return r
 
 
+@app.get("/get_power_by_hashrate")
+def get_power_by_hashrate():
+    # Fetching data from ASICS
+    fields = asics_info()
+    hashrate = 0.0
+
+    # Iterating through ASICs
+    for field in fields:
+        # Checking if there's a response from ASIC
+        if field['success'] is False:
+            continue
+
+        if field['hashrates']['Unit'] == 'TH/s':
+            hashrate += field['hashrates']['Hash Rate']
+
+    return {
+        'hashrate': round(hashrate, 1),
+        'power': round(hashrate/10),
+        'time': datetime.now()
+    }
+
+
 @app.post("/monitoring")
 async def update_monitoring(request: Request):
     data = await request.json()
