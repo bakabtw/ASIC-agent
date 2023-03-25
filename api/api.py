@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from datetime import datetime
 from pony import orm
 import uvicorn
@@ -201,24 +202,13 @@ def get_asic_info(asic_id: int):
 
 @app.get("/asics_info", include_in_schema=False)
 def asics_info():
-    with orm.db_session:
-        hosts = Hosts.select()
-        pool = ThreadPoolExecutor(max_workers=36)
-        ids = []
-
-        for host in hosts:
-            ids.append(host.id)
-
-    results = pool.map(get_asic_info, ids)
-    pool.shutdown()
-
-    return results
+    return PlainTextResponse(fetch_asics_info())
 
 
 @app.get("/asics_temp")
 def asics_temp():
     # Fetching data from ASICS
-    fields = json.loads(asics_info())
+    fields = json.loads(fetch_asics_info())
     r = []
 
     # Iterating through ASICs
@@ -249,7 +239,7 @@ def asics_temp():
 @app.get("/get_power_by_hashrate")
 def get_power_by_hashrate():
     # Fetching data from ASICS
-    fields = json.loads(asics_info())
+    fields = json.loads(fetch_asics_info())
     hashrate = 0.0
 
     # Iterating through ASICs
@@ -282,6 +272,26 @@ async def update_monitoring(request: Request):
 @app.get("/monitoring")
 async def get_monitoring():
     return app.state.monitoring
+
+
+def fetch_asics_info():
+    with orm.db_session:
+        hosts = Hosts.select()
+        pool = ThreadPoolExecutor(max_workers=36)
+        ids = []
+
+        for host in hosts:
+            ids.append(host.id)
+
+    responses = pool.map(get_asic_info, ids)
+    pool.shutdown()
+
+    # Fetching all data from generator
+    results = [x for x in responses]
+
+    # Dumping JSON
+    return json.dumps(results)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)
