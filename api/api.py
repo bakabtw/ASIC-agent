@@ -246,7 +246,6 @@ def asics_temp():
     return r
 
 
-# noinspection SpellCheckingInspection
 @app.get("/get_power_by_hashrate")
 def get_power_by_hashrate():
     # Fetching data from ASICS
