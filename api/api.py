@@ -255,7 +255,7 @@ def get_power_by_hashrate():
     # Iterating through ASICs
     for field in fields:
         # Checking if there's a response from ASIC
-        if field['success'] is False:
+        if 'success' not in field or field['success'] is False:
             continue
 
         if field['hashrates']['Unit'] == 'TH/s':
