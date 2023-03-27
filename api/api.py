@@ -160,7 +160,7 @@ async def asic_status():
 
 
 @app.get("/get_active_power")
-async def get_power():
+async def get_active_power():
     return {
         'success': True,
         'time': datetime.now(),
@@ -169,7 +169,7 @@ async def get_power():
 
 
 @app.post("/set_active_power/{power}")
-async def set_power(power: int):
+async def set_active_power(power: int):
     app.state.active_power = power
 
     return {'success': True}
