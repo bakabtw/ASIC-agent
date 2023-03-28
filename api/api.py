@@ -254,9 +254,10 @@ def get_power_by_hashrate():
             hashrate += field['hashrates']['Hash Rate']
 
     return {
-        'hashrate': round(hashrate, 1),
+        'success': True,
+        'time': datetime.now(),
         'power': round(hashrate/10),
-        'time': datetime.now()
+        'hashrate': round(hashrate, 1)
     }
 
 
