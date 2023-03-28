@@ -250,7 +250,7 @@ def get_power_by_hashrate():
         if 'success' not in field or field['success'] is False:
             continue
 
-        if field['hashrates']['Unit'] == 'TH/s':
+        if 'hashrates' in field and field['hashrates']['Unit'] == 'TH/s':
             hashrate += field['hashrates']['Hash Rate']
 
     return {
