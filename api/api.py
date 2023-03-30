@@ -52,7 +52,7 @@ class PowerGroups(db.Entity):
 db.generate_mapping()
 
 
-@app.get("/get_power")
+@app.get("/get_power", description="Returns available power (in Watts) for ASICs")
 async def get_power():
     return {
         'success': True,
@@ -61,14 +61,14 @@ async def get_power():
     }
 
 
-@app.post("/set_power/{power}")
+@app.post("/set_power/{power}", description="Sets available power (in Watts) for ASIC-agent")
 async def set_power(power: int):
     app.state.available_power = power
 
     return {'success': True}
 
 
-@app.get("/get_asic/{asic_id}")
+@app.get("/get_asic/{asic_id}", description="Returns info from DB about an ASIC")
 async def get_asic(asic_id: int):
     with orm.db_session:
         host = Hosts.get(id=asic_id)
@@ -89,7 +89,7 @@ async def get_asic(asic_id: int):
     }
 
 
-@app.post("/update_asic")
+@app.post("/update_asic", description="Updates info about an ASIC in DB")
 async def update_asic(request: Request):
     with orm.db_session:
         data = await request.json()
@@ -124,7 +124,7 @@ async def update_asic(request: Request):
             return {'success': 'true', 'status': 'updated'}
 
 
-@app.post("/delete_asic/{asic_id}")
+@app.post("/delete_asic/{asic_id}", description="Deletes an ASIC from DB")
 async def delete_asic(asic_id: int):
     with orm.db_session:
         host = Hosts.get(id=asic_id)
@@ -137,7 +137,7 @@ async def delete_asic(asic_id: int):
             return {'success': 'true', 'status': 'updated'}
 
 
-@app.get("/asic_status")
+@app.get("/asic_status", description="Returns info about all ASICS from DB (credentials, status)")
 async def asic_status():
     with orm.db_session:
         hosts = Hosts.select()
@@ -159,12 +159,12 @@ async def asic_status():
     return output
 
 
-@app.get("/get_active_power")
+@app.get("/get_active_power", description="Returns power (in Watts) used by all ASICs. Currently we use evaluation based total hashrate")
 async def get_active_power():
     return get_power_by_hashrate()
 
 
-@app.get("/get_asic_info/{asic_id}", include_in_schema=False)
+@app.get("/get_asic_info/{asic_id}", include_in_schema=False, description="Returns an info about an ASIC from API")
 @cached(cache=TTLCache(maxsize=1024, ttl=60))
 def get_asic_info(asic_id: int):
     with orm.db_session:
@@ -189,12 +189,12 @@ def get_asic_info(asic_id: int):
     return r
 
 
-@app.get("/asics_info", include_in_schema=False)
+@app.get("/asics_info", include_in_schema=False, description="Returns info about all ASICS from API")
 def asics_info():
     return PlainTextResponse(fetch_asics_info())
 
 
-@app.get("/asics_temp")
+@app.get("/asics_temp", description="Return info about temperature of each hashing board")
 def asics_temp():
     # Fetching data from ASICS
     fields = json.loads(fetch_asics_info())
@@ -225,7 +225,7 @@ def asics_temp():
     return r
 
 
-@app.get("/get_power_by_hashrate")
+@app.get("/get_power_by_hashrate", description="Returns power (in Watts) used by all ASICs based on total hashrate")
 def get_power_by_hashrate():
     # Fetching data from ASICS
     fields = json.loads(fetch_asics_info())
@@ -248,7 +248,7 @@ def get_power_by_hashrate():
     }
 
 
-@app.post("/monitoring")
+@app.post("/monitoring", description="Updates info about container monitoring (temp, voltage, etc)")
 async def update_monitoring(request: Request):
     data = await request.json()
     app.state.monitoring = data
@@ -259,7 +259,7 @@ async def update_monitoring(request: Request):
     }
 
 
-@app.get("/monitoring")
+@app.get("/monitoring", description="Returns info about container monitoring")
 async def get_monitoring():
     return app.state.monitoring
 
