@@ -106,8 +106,7 @@ class AsicAgent:
 
             # Sending stats to InfluxDB
             self.write_logs(available_power, active_power)
-            # Updating active power
-            self.update_active_power(active_power)
+
             # Sleeping before the next iteration
             time.sleep(self.sleep_timer)
 
@@ -496,17 +495,6 @@ class AsicAgent:
                 write_api.write(bucket=self.influxdb['bucket'], org=self.influxdb['org'], record=p)
         except Exception as e:
             logging.error(f"Error writing logs: {e}")
-
-    def update_active_power(self, active_power):
-        data = {}
-
-        try:
-            # Sending POST request to the endpoint
-            r = requests.post(f"{self.endpoints['UPDATE']['active_power']}/{active_power}")
-            data = r.json()
-        except Exception as e:
-            logging.error(f"Download error {e}")
-            data['success'] = False  # Fetching data wasn't successful
 
 
 if __name__ == '__main__':
