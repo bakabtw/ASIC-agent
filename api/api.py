@@ -161,20 +161,7 @@ async def asic_status():
 
 @app.get("/get_active_power")
 async def get_active_power():
-    # return {
-    #     'success': True,
-    #     'time': datetime.now(),
-    #     'power': app.state.active_power
-    # }
-
     return get_power_by_hashrate()
-
-
-@app.post("/set_active_power/{power}")
-async def set_active_power(power: int):
-    app.state.active_power = power
-
-    return {'success': True}
 
 
 @app.get("/get_asic_info/{asic_id}", include_in_schema=False)
