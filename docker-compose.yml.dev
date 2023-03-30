@@ -2,7 +2,7 @@ version: '3'
 
 services:
   asic-agent:
-    image: bakabtw/asic-agent
+    image: bakabtw/asic-agent:dev
     container_name: asic-agent
     restart: unless-stopped
     volumes:
@@ -14,11 +14,12 @@ services:
       - SLEEP_TIMER=15 # Time between checks
       - RESET_ASIC_TIMEOUT=5 # Timeout for accessing ASIC
       - MIKROTIK_ACCESS_TIMEOUT=5 # Timeout for accessing Mikrotik router
-      - URL=http://backend/get_power # URL for getting active power updates
+      - URL=http://backend # URL for getting active power updates (without '/' at the end)
       - ROUTER_IP=192.168.88.1 # Mikrotik IP
       - ROUTER_PORT=8728 # Mikrotik API port
       - ROUTER_USERNAME=admin # Mikrotik user
       - ROUTER_PASSWORD=aszpvo # Mikrotik password
+      - INFLUX_SCHEME=http # InfluxDB scheme (http / https)
       - INFLUX_HOST=influxdb # InfluxDB host
       - INFLUX_PORT=8086 # InfluxDB port
       - INFLUX_TOKEN=U1sTwb5gxp7EzFamf2qwtHwCmUZnojD1x63l4fn-rKPh_Dc1LM1jS5OLZuP39MS895lEvMH7zjC3bUZD3NqwpA== # InfluxDB token
@@ -26,7 +27,7 @@ services:
       - INFLUX_BUCKET=power # InfluxDB bucket
 
   backend:
-    build: ./api/
+    image: bakabtw/asic-agent-api:dev
     container_name: asic-agent-backend
     restart: unless-stopped
     volumes:
@@ -35,16 +36,13 @@ services:
       - "8000:80"
 
   frontend:
-    build:
-      context: https://github.com/bakabtw/asic-agent-frontend.git
-      args:
-        - HOST=http://localhost:8000 # URL to API backend
+    image: bakabtw/asic-agent-frontend:dev
     container_name: asic-agent-frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
-      - "3000:80"
+      - "80:80"
 
   influxdb:
     image: influxdb
