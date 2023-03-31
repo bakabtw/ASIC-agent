@@ -242,7 +242,7 @@ def get_power_by_hashrate():
     return {
         'success': True,
         'time': datetime.now(),
-        'power': hashrate*100,
+        'power': round(hashrate*100),
         'hashrate': round(hashrate, 1)
     }
 
