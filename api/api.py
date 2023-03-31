@@ -12,7 +12,6 @@ import json
 app = FastAPI()
 
 app.state.available_power = 0
-app.state.active_power = 0
 app.state.monitoring = {}
 
 app.add_middleware(
