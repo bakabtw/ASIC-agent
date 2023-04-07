@@ -167,7 +167,11 @@ async def get_active_power():
         for host in hosts:
             power += host.power if host.online.lower() == 'true' else 0
 
-    return power
+    return {
+        'success': True,
+        'time': datetime.now(),
+        'power': power
+    }
 
 
 @app.get("/get_asic_info/{asic_id}", include_in_schema=False, description="Returns an info about an ASIC from API")
