@@ -158,9 +158,16 @@ async def asic_status():
     return output
 
 
-@app.get("/get_active_power", description="Returns power (in Watts) used by all ASICs. Currently we use evaluation based total hashrate")
+@app.get("/get_active_power", description="Returns power (in Watts) used by all ASICs (calculated value)")
 async def get_active_power():
-    return get_power_by_hashrate()
+    with orm.db_session:
+        hosts = Hosts.select()
+        power = 0
+
+        for host in hosts:
+            power += host.power if host.online.lower() == 'true' else 0
+
+    return power
 
 
 @app.get("/get_asic_info/{asic_id}", include_in_schema=False, description="Returns an info about an ASIC from API")
