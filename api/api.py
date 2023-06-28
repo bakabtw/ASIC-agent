@@ -320,7 +320,7 @@ async def next_step_readiness():
         if 'online' in field and field['online'] == 'True':
             active_count += 1
 
-    if mining_count < active_count:
+    if mining_count < active_count or mining_count == 0:
         power = 0
     else:
         power = 1000 * (app.state.monitoring['meter']['power']['A'] + app.state.monitoring['meter']['power']['B'] +
