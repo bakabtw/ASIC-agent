@@ -274,6 +274,27 @@ async def get_monitoring():
     return app.state.monitoring
 
 
+@app.get("/running_asics", description="Returns a number of running (mining) ASICs")
+async def running_asics():
+    # Fetching data from ASICS
+    fields = json.loads(fetch_asics_info())
+    count = 0
+
+    # Iterating through ASICs
+    for field in fields:
+        # Checking if there's a response from ASIC
+        if 'success' not in field or field['success'] is False:
+            continue
+
+        if 'TotalHash' in field and field['TotalHash']['Unit'] == 'TH/s':
+            count += 1
+
+    return {
+        'success': True,
+        'running_asics': count
+    }
+
+
 def fetch_asics_info():
     with orm.db_session:
         hosts = Hosts.select()
