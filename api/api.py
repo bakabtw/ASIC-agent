@@ -312,7 +312,7 @@ async def next_step_readiness():
             mining_count += 1
 
     # Fetching data from a table of
-    fields = json.loads(await asic_status())
+    fields = await asic_status()
     active_count = 0
 
     # Iterating through ASICs
