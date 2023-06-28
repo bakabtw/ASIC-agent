@@ -295,6 +295,38 @@ async def running_asics():
     }
 
 
+@app.get("/next_step_readiness", description="Returns active power (in Watts) when ASICs "
+                                             "for the current step has started or 0 if they're starting up")
+async def next_step_readiness():
+    # Fetching data from ASICS
+    fields = json.loads(fetch_asics_info())
+    mining_count = 0
+
+    # Iterating through ASICs
+    for field in fields:
+        # Checking if there's a response from ASIC
+        if 'success' not in field or field['success'] is False:
+            continue
+
+        if 'TotalHash' in field and field['TotalHash']['Unit'] == 'TH/s':
+            mining_count += 1
+
+    # Fetching data from a table of
+    fields = json.loads(await asic_status())
+    active_count = 0
+
+    # Iterating through ASICs
+    for field in fields:
+        if 'online' in field and field['online'] == 'True':
+            active_count += 1
+
+    if mining_count < active_count:
+        return 0
+    else:
+        return 1000*(app.state.monitoring['meter']['power']['A'] + app.state.monitoring['meter']['power']['B'] +
+                     app.state.monitoring['meter']['power']['C'])
+
+
 def fetch_asics_info():
     with orm.db_session:
         hosts = Hosts.select()
