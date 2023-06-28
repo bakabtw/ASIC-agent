@@ -222,14 +222,14 @@ def asics_temp():
         # Iterating through boards
         for dev in field['DEVS']:
             temperature.append({
-                    'board_id': dev['ID'],
-                    'temperature': dev['Temperature']
+                'board_id': dev['ID'],
+                'temperature': dev['Temperature']
             })
 
         # Adding data to response
         r.append({
-                'id': asic_id,
-                'temperature': temperature
+            'id': asic_id,
+            'temperature': temperature
         })
 
     return r
@@ -253,7 +253,7 @@ def get_power_by_hashrate():
     return {
         'success': True,
         'time': datetime.now(),
-        'power': round(hashrate*100),
+        'power': round(hashrate * 100),
         'hashrate': round(hashrate, 1)
     }
 
@@ -321,10 +321,16 @@ async def next_step_readiness():
             active_count += 1
 
     if mining_count < active_count:
-        return 0
+        power = 0
     else:
-        return 1000*(app.state.monitoring['meter']['power']['A'] + app.state.monitoring['meter']['power']['B'] +
-                     app.state.monitoring['meter']['power']['C'])
+        power = 1000 * (app.state.monitoring['meter']['power']['A'] + app.state.monitoring['meter']['power']['B'] +
+                        app.state.monitoring['meter']['power']['C'])
+
+    return {
+        "power": power,
+        "mining_count": mining_count,
+        "active_count": active_count
+    }
 
 
 def fetch_asics_info():
