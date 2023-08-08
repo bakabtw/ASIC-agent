@@ -13,6 +13,7 @@ app = FastAPI()
 
 app.state.available_power = 0
 app.state.monitoring = {}
+app.state.relay_state = {}
 
 app.add_middleware(
     CORSMiddleware,
@@ -272,6 +273,22 @@ async def update_monitoring(request: Request):
 @app.get("/monitoring", description="Returns info about container monitoring")
 async def get_monitoring():
     return app.state.monitoring
+
+
+@app.post("/relay_state", description="Updates info about relay state")
+async def update_relay_state(request: Request):
+    data = await request.json()
+    app.state.relay_state = data
+
+    return {
+        'success': True,
+        'time': datetime.now(),
+    }
+
+
+@app.get("/relay_state", description="Returns info about relay state")
+async def get_relay_state():
+    return app.state.relay_state
 
 
 @app.get("/running_asics", description="Returns a number of running (mining) ASICs")
